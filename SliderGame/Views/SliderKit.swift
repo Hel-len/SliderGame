@@ -9,61 +9,55 @@ import SwiftUI
 
 struct SliderKit: UIViewRepresentable {
     @Binding var currentValue: Double
-    var targetValue: Int
-    var score: Double {
-        computeScore()
-    }
+    
+    let alpha: Int
+    let color: UIColor
 
-    private func computeScore() -> Double {
-        let difference = abs(targetValue - lround(currentValue))
-        return Double( 100 - difference ) / 100
-    }
     
     func makeUIView(context: Context) -> UISlider {
         let slider = UISlider()
-        slider.sizeToFit()
+        slider.minimumValue = 1
         slider.maximumValue = 100
-        slider.minimumValue = 0
         slider.minimumTrackTintColor = CustomColors().deepTurquois
         slider.maximumTrackTintColor = CustomColors().pastelTurquois
-        slider.value = Float(currentValue)
-        slider.thumbTintColor = UIColor.white.withAlphaComponent(CGFloat(score))
+
         
         slider.addTarget(
-          context.coordinator,
-          action: #selector(Coordinator.valueChanged(_:)),
-          for: .valueChanged
+            context.coordinator,
+            action: #selector(Coordinator.valueChanged),
+            for: .valueChanged
         )
-        
         return slider
     }
     
     func updateUIView(_ uiView: UISlider, context: Context) {
         uiView.value = Float(currentValue)
-        uiView.thumbTintColor = UIColor.white.withAlphaComponent(CGFloat(score))
+        uiView.thumbTintColor = color.withAlphaComponent(CGFloat(alpha) / 100)
     }
     
-    func makeCoordinator() -> SliderKit.Coordinator {
+    func makeCoordinator() -> Coordinator {
       Coordinator(value: $currentValue)
     }
 }
 
 struct SliderKit_Previews: PreviewProvider {
     static var previews: some View {
-        SliderKit(currentValue: .constant(50), targetValue: 50)
+        SliderKit(currentValue: .constant(50), alpha: 100, color: .blue)
     }
 }
 
 extension SliderKit {
     
     class Coordinator: NSObject {
-      var value: Binding<Double>
-      init(value: Binding<Double>) {
-        self.value = value
-      }
-
-      @objc func valueChanged(_ sender: UISlider) {
-        self.value.wrappedValue = Double(sender.value)
-      }
+        
+        @Binding var value: Double
+        
+        init(value: Binding<Double>) {
+            self._value = value
+        }
+        
+        @objc func valueChanged(_ sender: UISlider) {
+            value = Double(sender.value)
+        }
     }
 }
